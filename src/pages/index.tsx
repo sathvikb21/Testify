@@ -2,12 +2,8 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
-import { signIn, signOut, useSession } from "next-auth/react";
-import logo from "~/assets/images/logo.png";
 
 const Home: NextPage = () => {
-  const { data: sessionData } = useSession();
-
   return (
     <>
       <Head>
@@ -15,7 +11,7 @@ const Home: NextPage = () => {
         <meta name="description" content="Testify" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
+      
       <nav className="flex flex-row items-center justify-between px-3">
         <Link href="/" className="flex flex-row items-center">
           <Image src={logo} alt="Testify" width={75} height={75} />
@@ -50,6 +46,7 @@ const Home: NextPage = () => {
           )}
         </div>
       </nav>
+
     </>
   );
 };

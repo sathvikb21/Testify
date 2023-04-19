@@ -55,6 +55,8 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+    testResult    TestResult[]
+    testPapers Test[]
 }
 
 model VerificationToken {
@@ -63,4 +65,45 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Test{
+    id String @id @default(cuid())
+    name String
+    description String
+    questions Question[]
+    testResult TestResult[]
+    startDateTime DateTime
+    endDateTime DateTime?
+}
+
+model LearningTarget { 
+    id String @id @default(cuid())
+    name String
+    description String
+    questions Question[]
+}
+
+model Question{
+    id String @id @default(cuid())
+    question String
+    typeOfQuestion String 
+    option1 String?
+    option2 String?
+    option3 String?
+    option4 String?
+    essay String? 
+    answer String
+    learningTarget LearningTarget @relation(fields: [learningTargetId], references: [id])
+    learningTargetId String
+}
+
+model TestResult{
+    id String @id @default(cuid())
+    test Test @relation(fields: [testId], references: [id])
+    testId String
+    students User[]
+    userId String
+    score Int
+    date DateTime
 }
