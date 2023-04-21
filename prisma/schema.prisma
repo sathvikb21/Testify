@@ -73,6 +73,8 @@ model Test{
     description String
     questions Question[]
     testResult TestResult[]
+    user User @relation(fields: [userId], references: [id]) 
+    userId String
     startDateTime DateTime
     endDateTime DateTime?
 }
@@ -94,6 +96,8 @@ model Question{
     option4 String?
     essay String? 
     answer String
+    test Test @relation(fields: [testId], references: [id])
+    testId String
     learningTarget LearningTarget @relation(fields: [learningTargetId], references: [id])
     learningTargetId String
 }
