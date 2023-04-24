@@ -7,17 +7,11 @@ generator client {
 
 datasource db {
     provider = "sqlite"
-    // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+  // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+  // Further reading:
+  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
     url      = env("DATABASE_URL")
-}
-
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 }
 
 // Necessary for Next auth
@@ -55,8 +49,10 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    testResult    TestResult[]
-    testPapers Test[]
+    UserType      String    @default("student")
+    courses       Course[]
+    Section       Section?  @relation(fields: [sectionId], references: [id])
+    sectionId     String?
 }
 
 model VerificationToken {
@@ -67,47 +63,55 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
-model Test{
-    id String @id @default(cuid())
-    name String
+model Section {
+    id          String @id @default(cuid())
+    name        String
     description String
-    questions Question[]
-    testResult TestResult[]
-    user User @relation(fields: [userId], references: [id]) 
-    userId String
-    startDateTime DateTime
-    endDateTime DateTime?
+    course      Course @relation(fields: [courseId], references: [id])
+    students    User[]
+    courseId    String
 }
 
-model LearningTarget { 
-    id String @id @default(cuid())
-    name String
-    description String
-    questions Question[]
+model Course {
+    id              String           @id @default(cuid())
+    name            String
+    description     String
+    sections        Section[]
+    teacher         User             @relation(fields: [teacherId], references: [id])
+    tests           Test[]
+    learningTargets LearningTarget[]
+    teacherId       String
 }
 
-model Question{
-    id String @id @default(cuid())
+model Test {
+    id          String     @id @default(cuid())
+    name        String
+    description String
+    course      Course     @relation(fields: [courseId], references: [id])
+    courseId    String
+    questions   Question[]
+}
+
+model Question {
+    id       String   @id @default(cuid())
     question String
-    typeOfQuestion String 
-    option1 String?
-    option2 String?
-    option3 String?
-    option4 String?
-    essay String? 
-    answer String
-    test Test @relation(fields: [testId], references: [id])
-    testId String
-    learningTarget LearningTarget @relation(fields: [learningTargetId], references: [id])
-    learningTargetId String
+    test     Test     @relation(fields: [testId], references: [id])
+    testId   String
+    answers  Answer[]
 }
 
-model TestResult{
-    id String @id @default(cuid())
-    test Test @relation(fields: [testId], references: [id])
-    testId String
-    students User[]
-    userId String
-    score Int
-    date DateTime
+model LearningTarget {
+    id          String @id @default(cuid())
+    name        String
+    description String
+    course      Course @relation(fields: [courseId], references: [id])
+    courseId    String
+}
+
+model Answer {
+    id         String   @id @default(cuid())
+    answer     String
+    question   Question @relation(fields: [questionId], references: [id])
+    questionId String
+    correct    Boolean
 }
