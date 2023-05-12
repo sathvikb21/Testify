@@ -2,116 +2,141 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "sqlite"
+  provider = "sqlite"
   // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
   // Further reading:
   // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 // Necessary for Next auth
 model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? // @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? // @db.Text
+  access_token      String? // @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? // @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String        @id @default(cuid())
+  sessionToken String        @unique
+  userId       String
+  expires      DateTime
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    UserType      String    @default("student")
-    courses       Course[]
-    Section       Section?  @relation(fields: [sectionId], references: [id])
-    sectionId     String?
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  sections      Section[]
+  UserType      String    @default("student")
+  courses       Course[]
+  answers       Answer[]
+
+  testsCreated Test[]
 }
 
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
 }
 
 model Section {
-    id          String @id @default(cuid())
-    name        String
-    description String
-    course      Course @relation(fields: [courseId], references: [id])
-    students    User[]
-    courseId    String
+  id          String        @id @default(cuid())
+  name        String
+  description String
+  course      Course        @relation(fields: [courseId], references: [id])
+  students    User[]
+  SectionTest SectionTest[]
+  courseId    String
 }
 
 model Course {
-    id              String           @id @default(cuid())
-    name            String
-    description     String
-    sections        Section[]
-    teacher         User             @relation(fields: [teacherId], references: [id])
-    tests           Test[]
-    learningTargets LearningTarget[]
-    teacherId       String
+  id              String           @id @default(cuid())
+  name            String
+  description     String
+  sections        Section[]
+  teacher         User             @relation(fields: [teacherId], references: [id])
+  learningTargets LearningTarget[]
+  teacherId       String
+  test            Test[]
+
+  @@index([teacherId])
 }
 
 model Test {
-    id          String     @id @default(cuid())
-    name        String
-    description String
-    course      Course     @relation(fields: [courseId], references: [id])
-    courseId    String
-    questions   Question[]
+  id              String           @id @default(cuid())
+  teacher         User             @relation(fields: [teacherId], references: [id])
+  teacherId       String
+  name            String
+  description     String
+  course          Course           @relation(fields: [courseId], references: [id])
+  learningTargets LearningTarget[]
+  quesions        Question[]
+  courseId        String
+  SectionTest     SectionTest[]
 }
 
 model Question {
-    id       String   @id @default(cuid())
-    question String
-    test     Test     @relation(fields: [testId], references: [id])
-    testId   String
-    answers  Answer[]
+  id               String         @id @default(cuid())
+  question         String
+  test             Test?          @relation(fields: [testId], references: [id])
+  testId           String?
+  answerChoices    String?
+  answer           String
+  learningTarget   LearningTarget @relation(fields: [learningTargetId], references: [id])
+  learningTargetId String
+  answers          Answer[]
 }
 
 model LearningTarget {
-    id          String @id @default(cuid())
-    name        String
-    description String
-    course      Course @relation(fields: [courseId], references: [id])
-    courseId    String
+  id          String     @id @default(cuid())
+  name        String
+  description String
+  course      Course     @relation(fields: [courseId], references: [id])
+  questions   Question[]
+  courseId    String
+  test        Test[]
 }
 
 model Answer {
-    id         String   @id @default(cuid())
-    answer     String
-    question   Question @relation(fields: [questionId], references: [id])
-    questionId String
-    correct    Boolean
+  id         String   @id @default(cuid())
+  answer     String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  correct    Boolean
+  student    User     @relation(fields: [studentId], references: [id])
+  studentId  String
+}
+
+model SectionTest {
+  id        String   @id @default(cuid())
+  test      Test     @relation(fields: [testId], references: [id])
+  testId    String
+  Section   Section  @relation(fields: [sectionId], references: [id])
+  sectionId String
 }
