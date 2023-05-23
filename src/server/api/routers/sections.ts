@@ -6,7 +6,6 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 
-import { TRPCError } from "@trpc/server";
 
 export const sectionRouter = createTRPCRouter({
   getAllSections: publicProcedure
@@ -46,22 +45,38 @@ export const sectionRouter = createTRPCRouter({
   addStudentsToSection: protectedProcedure
     .input(
       z.object({
+        courseId: z.string(),
         sectionId: z.string(),
         studentIds: z.array(z.string()),
       })
     )
     .mutation(async ({ ctx, input }) => {
-
       const addStudents = await ctx.prisma.section.update({
         where: { id: input.sectionId },
         data: {
           students: {
-           connect: input.studentIds.map((student) => ({ id: student }))
+            connect: input.studentIds.map((student) => ({ id: student })),
           },
         },
       });
 
       return addStudents;
+    }),
 
+  getStudentsInSection: protectedProcedure
+    .input(
+      z.object({
+        sectionId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const section = await ctx.prisma.section.findUnique({
+        where: { id: input.sectionId },
+        include: {
+          students: true,
+        },
+      });
+
+      return section?.students;
     }),
 });

@@ -9,11 +9,22 @@ import {
 import { type TRPCError } from "@trpc/server";
 
 export const testsRouter = createTRPCRouter({
-  getAllTest: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.test.findMany({
-      where: { teacherId: ctx.session?.user.id as string },
-    });
-  }),
+  getAllTest: publicProcedure
+    .input(
+      z.object({
+        courseId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const tests = await ctx.prisma.test.findMany({
+        where: {
+          teacherId: ctx.session?.user.id as string,
+          courseId: input.courseId,
+        },
+      });
+
+      return tests;
+    }),
 
   createNewTest: protectedProcedure
     .input(
@@ -73,6 +84,15 @@ export const testsRouter = createTRPCRouter({
         },
       });
 
+      // await ctx.prisma.test.update({
+      //   where: { id: test.id },
+      //   data: {
+      //     quesions: {
+      //       connect:
+      //     },
+      //   },
+      // });
+
       return test;
     }),
 
@@ -85,6 +105,13 @@ export const testsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const test = await ctx.prisma.test.findUnique({
         where: { id: input.id },
+        include: {
+          learningTargets: {
+            include: {
+              questions: true,
+            },
+          },
+        },
       });
 
       return test;

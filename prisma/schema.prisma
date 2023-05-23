@@ -55,6 +55,8 @@ model User {
   answers       Answer[]
 
   testsCreated Test[]
+
+  testsTaken SectionTest[]
 }
 
 model VerificationToken {
@@ -104,8 +106,7 @@ model Test {
 model Question {
   id               String         @id @default(cuid())
   question         String
-  test             Test?          @relation(fields: [testId], references: [id])
-  testId           String?
+  test             Test[] 
   answerChoices    String?
   answer           String
   learningTarget   LearningTarget @relation(fields: [learningTargetId], references: [id])
@@ -117,7 +118,7 @@ model LearningTarget {
   id          String     @id @default(cuid())
   name        String
   description String
-  course      Course     @relation(fields: [courseId], references: [id])
+  course      Course     @relation(fields: [courseId], references: [id] )
   questions   Question[]
   courseId    String
   test        Test[]
@@ -139,4 +140,7 @@ model SectionTest {
   testId    String
   Section   Section  @relation(fields: [sectionId], references: [id])
   sectionId String
+  students User[]
+  startTime DateTime @default(now())
+  endTime DateTime
 }

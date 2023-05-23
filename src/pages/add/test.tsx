@@ -9,10 +9,12 @@ import { useState } from "react";
 import Navbar from "~/components/Navbar";
 import { api } from "~/utils/api";
 
-const SessionTest = () => {
+const Test = () => {
   const [courseId, setCourseId] = useState("");
-  const [sectionIds, setSectionIds] = useState<string[]>([]);
-  const [learningTargetIds, setLearningTargetIds] = useState<string[]>([]);
+  const [sectionId, setSectionId] = useState<string>("");
+  const [testId, setTestId] = useState("");
+  const [timeLimit, setTimeLimit] = useState("");
+  const [students, setStudents] = useState<string[]>([]);
 
   const courses = api.courses.getAllCourses.useQuery();
 
@@ -21,40 +23,31 @@ const SessionTest = () => {
     { enabled: !!courseId }
   );
 
-  const learningTargets = api.learningTarget.getAllLearningTargets.useQuery(
+  const tests = api.test.getAllTest.useQuery(
     { courseId },
     { enabled: !!courseId }
   );
 
-  const onSectionChange = (event: SelectChangeEvent<typeof sectionIds>) => {
-    const {
-      target: { value },
-    } = event;
-    setSectionIds(
-      // On autofill we get a stringified value.
-      typeof value === "string" ? value.split(",") : value
-    );
+
+  const studentsInSection = api.section.getStudentsInSection.useQuery(
+    { sectionId },
+    { enabled: !!sectionId }
+  );
+
+  const onSectionChange = (event: SelectChangeEvent) => {
+    setSectionId(event.target.value);
+
+    studentsInSection.data?.map((student) => {
+      setStudents((students) => [...students, student.id]);
+    });
   };
 
-  const onLearningTargetChange = (
-    event: SelectChangeEvent<typeof learningTargetIds>
-  ) => {
-    const {
-      target: { value },
-    } = event;
-    setLearningTargetIds(
-      // On autofill we get a stringified value.
-      typeof value === "string" ? value.split(",") : value
-    );
-  };
+  const { mutate } = api.sectionTest.createNewSectionTest.useMutation();
 
   return (
     <>
       <Navbar />
-
-      <div>
-        <h1>Test for Sessions</h1>
-
+      <form>
         <div className="flex w-1/4 flex-col">
           <FormControl>
             <InputLabel id="demo-simple-select-label">Courses</InputLabel>
@@ -82,10 +75,9 @@ const SessionTest = () => {
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select"
-              value={sectionIds}
+              value={sectionId}
               label="Sections"
-              onChange={onSectionChange}
-              multiple
+              onChange={(e) => onSectionChange(e)}
             >
               {sections.data?.map((section, index) => {
                 return (
@@ -100,21 +92,18 @@ const SessionTest = () => {
 
         <div className="flex w-1/4 flex-col">
           <FormControl>
-            <InputLabel id="demo-simple-select-label">
-              Learning Targets
-            </InputLabel>
+            <InputLabel id="demo-simple-select-label">Courses</InputLabel>
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select"
-              value={learningTargetIds}
-              label="Sections"
-              onChange={onLearningTargetChange}
-              multiple
+              value={testId}
+              label="Courses"
+              onChange={(e) => setTestId(e.target.value)}
             >
-              {learningTargets.data?.map((learningTarget, index) => {
+              {tests.data?.map((test, index) => {
                 return (
-                  <MenuItem key={index} value={learningTarget.id}>
-                    {learningTarget.name}
+                  <MenuItem key={index} value={test.id}>
+                    {test.name}
                   </MenuItem>
                 );
               })}
@@ -122,10 +111,23 @@ const SessionTest = () => {
           </FormControl>
         </div>
 
-        
-      </div>
+        <input
+          className="border"
+          type="text"
+          placeholder="Time Limit"
+          value={timeLimit}
+          onChange={(e) => setTimeLimit(e.target.value)}
+        />
+
+        <button
+          type="submit"
+          onClick={() => mutate({ testId, sectionId, timeLimit, students })}
+        >
+          Submit
+        </button>
+      </form>
     </>
   );
 };
 
-export default SessionTest;
+export default Test;

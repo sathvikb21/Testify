@@ -110,7 +110,7 @@ const Section = () => {
 
           <button
             onClick={() => {
-              mutate({ sectionId, studentIds });
+              mutate({ courseId, sectionId, studentIds });
             }}
           >
             Add Students

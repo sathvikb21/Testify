@@ -6,36 +6,65 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
-import { type TRPCError } from "@trpc/server";
-
-export const testsRouter = createTRPCRouter({
-  getAllTest: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.test.findMany({
-      where: { teacherId: ctx.session?.user.id as string },
-    });
-  }),
+export const sectionTest = createTRPCRouter({
+  getAllTest: publicProcedure
+    .input(
+      z.object({
+        testId: z.string(),
+      })
+    )
+    .query(({ ctx, input }) => {
+      return ctx.prisma.sectionTest.findMany({
+        where: { testId: input.testId },
+      });
+    }),
 
   createNewSectionTest: protectedProcedure
     .input(
       z.object({
-        name: z.string(),
-        description: z.string(),
-        courseId: z.string(),
-        learningTargets: z.array(z.string()),
+        testId: z.string(),
+        sectionId: z.string(),
+        timeLimit: z.string(),
+        students: z.array(z.string()),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const sectionTest = await ctx.prisma.test.create({
+      const minutes = parseInt(input.timeLimit);
+      const testId = input.testId;
+      const sectionId = input.sectionId;
+      const students = input.students;
+
+      const test = await ctx.prisma.sectionTest.create({
         data: {
-          name: input.name,
-          description: input.description,
-          courseId: input.courseId,
-          teacherId: ctx.session.user.id,
-          learningTargets: {
-            connect: input.learningTargets.map((learningTarget) => {
-              return { id: learningTarget };
-            }),
+          testId: testId,
+          sectionId: sectionId,
+          endTime: new Date(Date.now() + minutes * 60000),
+          students: {
+            connect: students.map((id) => ({ id })),
           },
+        },
+      });
+
+      return test;
+    }),
+
+  getTestbyId: publicProcedure
+    .input(
+      z.object({
+        testId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const test = await ctx.prisma.sectionTest.findUnique({
+        where: { id: input.testId },
+        include: {
+          test: {
+            include: {
+              learningTargets: {
+                include: { questions: true }
+              }
+            }
+          }, students: true
         },
       });
 

@@ -10,6 +10,18 @@ export const usersRouter = createTRPCRouter({
   getUser: publicProcedure.query(async ({ ctx }) => {
     const user = await ctx.prisma.user.findUnique({
       where: { id: ctx.session?.user.id as string },
+      include: {
+        courses: {
+          include: { teacher: true },
+        },
+        sections: true,
+        testsCreated: true,
+        testsTaken: {
+          include: {
+            test: true,
+          },
+        },
+      },
     });
 
     return user;
