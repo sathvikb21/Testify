@@ -6,6 +6,7 @@ import { sectionRouter } from "~/server/api/routers/sections";
 import { questionRouter } from "~/server/api/routers/question";
 import { testsRouter } from "~/server/api/routers/test";
 import { sectionTest } from "~/server/api/routers/sessiontest";
+import { resultRouter } from "~/server/api/routers/testresult";
 
 /**
  * This is the primary router for your server.
@@ -15,11 +16,12 @@ import { sectionTest } from "~/server/api/routers/sessiontest";
 export const appRouter = createTRPCRouter({
   user: usersRouter,
   courses: coursesRouter,
-  learningTarget: learningTargetRouter, 
+  learningTarget: learningTargetRouter,
   section: sectionRouter,
   question: questionRouter,
   test: testsRouter,
   sectionTest: sectionTest,
+  testResults: resultRouter,
 });
 
 // export type definition of API

@@ -54,7 +54,7 @@ model User {
   courses       Course[]
 
   testsCreated Test[]
-
+  testResults TestResult[]
   testsTaken SectionTest[]
 }
 
@@ -100,6 +100,8 @@ model Test {
   quesions        Question[]
   courseId        String
   SectionTest     SectionTest[]
+
+  testResults TestResult[]
 }
 
 model Question {
@@ -139,4 +141,14 @@ model SectionTest {
   students  User[]
   startTime DateTime @default(now())
   endTime   DateTime
+
+}
+
+model TestResult{
+  id String @id @default(cuid())
+  test Test @relation(fields: [testId], references: [id])
+  testId String
+  student User @relation(fields: [studentId], references: [id])
+  studentId String
+  score Int 
 }

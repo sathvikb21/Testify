@@ -11,16 +11,13 @@ const Tests = () => {
     { enabled: !!testId }
   );
 
-  const numberOfQuestions = api.test.getNumberOfQuestions.useQuery(
-    { testId },
-    { enabled: !!testId }
-  ).data;
-
   const questions = test.data?.test.quesions;
+
+  const numberOfQuestions = questions?.length;
 
   const [answeredQuestions, setAnsweredQuestions] = useState<
     {
-      qNum: number;
+      questionId: number;
       answer: string;
     }[]
   >([]);
@@ -32,7 +29,7 @@ const Tests = () => {
     setAnsweredQuestions((prevAnsweredQuestions) => {
       const updatedAnsweredQuestions = [...prevAnsweredQuestions];
       updatedAnsweredQuestions[currentQuestion] = {
-        qNum: currentQuestion,
+        questionId: currentQuestion,
         answer: answer,
       };
       return updatedAnsweredQuestions;
@@ -44,8 +41,11 @@ const Tests = () => {
       console.log("done");
       return currentQuestion - 1;
     }
+    console.log(numberOfQuestions);
     setCurrentQuestion((prevCurrentQuestion) => prevCurrentQuestion + 1);
   };
+
+  const { mutate } = api.testResults.submitTest.useMutation();
 
   return (
     <div>
@@ -81,14 +81,13 @@ const Tests = () => {
         {currentQuestion === numberOfQuestions ? (
           <button
             onClick={() => {
-              nextQuestion();
+              mutate({ testId, answers: answeredQuestions });
             }}
           >
             Next
           </button>
         ) : (
           <>
-            {numberOfQuestions}
             <a
               onClick={() => {
                 nextQuestion();
