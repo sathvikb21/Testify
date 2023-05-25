@@ -6,7 +6,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
-import { type TRPCError } from "@trpc/server";
+import { api } from "~/utils/api";
 
 export const testsRouter = createTRPCRouter({
   getAllTest: publicProcedure
@@ -33,42 +33,11 @@ export const testsRouter = createTRPCRouter({
         description: z.string(),
         courseId: z.string(),
         learningTargets: z.array(z.string()),
+        questions: z.array(z.number()),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      if (input.description.length <= 0) {
-        const error: TRPCError = {
-          name: "TRPCError",
-          code: "BAD_REQUEST",
-          message: '"Test Description" must be at least 4 characters',
-        };
-
-        console.log(error);
-
-        return error;
-      }
-
-      if (input.name.length <= 0) {
-        const error: TRPCError = {
-          name: "TRPCError",
-          code: "BAD_REQUEST",
-          message: '"Test Name" must be at least 4 characters',
-        };
-
-        console.log(error);
-
-        return error;
-      }
-
-      if (input.courseId.length <= 0) {
-        const error: TRPCError = {
-          name: "TRPCError",
-          code: "BAD_REQUEST",
-          message: "Must select a section(s)",
-        };
-
-        return error;
-      }
+      const learningTargets = input.learningTargets;
 
       const test = await ctx.prisma.test.create({
         data: {
@@ -77,21 +46,17 @@ export const testsRouter = createTRPCRouter({
           courseId: input.courseId,
           teacherId: ctx.session.user.id,
           learningTargets: {
-            connect: input.learningTargets.map((learningTarget) => {
+            connect: learningTargets.map((learningTarget) => {
               return { id: learningTarget };
+            }),
+          },
+          quesions: {
+            connect: input.questions.map((question) => {
+              return { id: question };
             }),
           },
         },
       });
-
-      // await ctx.prisma.test.update({
-      //   where: { id: test.id },
-      //   data: {
-      //     quesions: {
-      //       connect:
-      //     },
-      //   },
-      // });
 
       return test;
     }),

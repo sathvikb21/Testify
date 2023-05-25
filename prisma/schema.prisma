@@ -34,11 +34,11 @@ model Account {
 }
 
 model Session {
-  id           String        @id @default(cuid())
-  sessionToken String        @unique
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -52,7 +52,6 @@ model User {
   sections      Section[]
   UserType      String    @default("student")
   courses       Course[]
-  answers       Answer[]
 
   testsCreated Test[]
 
@@ -104,34 +103,31 @@ model Test {
 }
 
 model Question {
-  id               String         @id @default(cuid())
+  id               Int         @id @default(autoincrement())
   question         String
-  test             Test[] 
-  answerChoices    String?
-  answer           String
+  test             Test[]
+  correctAnswer String
   learningTarget   LearningTarget @relation(fields: [learningTargetId], references: [id])
   learningTargetId String
-  answers          Answer[]
+  answerChoices    answerChoice[]
 }
 
 model LearningTarget {
   id          String     @id @default(cuid())
   name        String
   description String
-  course      Course     @relation(fields: [courseId], references: [id] )
+  course      Course     @relation(fields: [courseId], references: [id])
   questions   Question[]
   courseId    String
   test        Test[]
 }
 
-model Answer {
-  id         String   @id @default(cuid())
+model answerChoice {
+  id         Int   @id @default(autoincrement())
   answer     String
   question   Question @relation(fields: [questionId], references: [id])
-  questionId String
-  correct    Boolean
-  student    User     @relation(fields: [studentId], references: [id])
-  studentId  String
+  questionId Int 
+
 }
 
 model SectionTest {
@@ -140,7 +136,7 @@ model SectionTest {
   testId    String
   Section   Section  @relation(fields: [sectionId], references: [id])
   sectionId String
-  students User[]
+  students  User[]
   startTime DateTime @default(now())
-  endTime DateTime
+  endTime   DateTime
 }

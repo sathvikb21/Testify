@@ -6,12 +6,14 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import { set } from "zod";
 
 const Test = () => {
   const [courseId, setCourseId] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [learningTargets, setLearningTargets] = useState<string[]>([]);
+  const [questionIds, setQuestionIds] = useState<number[]>([]);
 
   const courses = api.courses.getAllCourses.useQuery();
   const learningTargetsQuery =
@@ -32,6 +34,11 @@ const Test = () => {
     setCourseId(event.target.value);
   };
 
+  const questionsSMTH = api.question.getQuestionsByLearningTargetId.useQuery(
+    { learningTargets: learningTargets },
+    { enabled: !!learningTargets }
+  );
+
   const onLearningTargetChange = (
     event: SelectChangeEvent<typeof learningTargets>
   ) => {
@@ -42,6 +49,9 @@ const Test = () => {
       // On autofill we get a stringified value.
       typeof value === "string" ? value.split(",") : value
     );
+    questionsSMTH.data?.map((question) => {
+      setQuestionIds((questionIds) => [...questionIds, question.id]);
+    });
   };
 
   return (
@@ -116,9 +126,19 @@ const Test = () => {
             </FormControl>
           </div>
 
+          <div className="flex w-1/4 flex-col">{questionIds}</div>
+
           <button
             type="submit"
-            onClick={() => mutate({ name, description, courseId, learningTargets })}
+            onClick={() =>
+              mutate({
+                name,
+                description,
+                courseId,
+                learningTargets,
+                questions: questionIds,
+              })
+            }
             className="rounded-lg bg-[#EB584F] px-10 py-2 text-white hover:bg-[#C04841]"
           >
             Submit

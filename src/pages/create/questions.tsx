@@ -8,6 +8,10 @@ const Questions = () => {
   const [correctAnswer, setCorrectAnswer] = useState("");
   const [courseId, setCourseId] = useState("");
   const [learningTarget, setLearningTarget] = useState("");
+  const [answerOne, setAnswerOne] = useState("");
+  const [answerTwo, setAnswerTwo] = useState("");
+  const [answerThree, setAnswerThree] = useState("");
+  const [answerFour, setAnswerFour] = useState("");
 
   const { mutate } = api.question.createNewQuestion.useMutation();
 
@@ -69,6 +73,35 @@ const Questions = () => {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           className="border"
+          placeholder="Question"
+        />
+        <input
+          type="text"
+          value={answerOne}
+          onChange={(e) => setAnswerOne(e.target.value)}
+          placeholder="Answer Choice 1"
+          className="border"
+        />
+        <input
+          type="text"
+          value={answerTwo}
+          onChange={(e) => setAnswerTwo(e.target.value)}
+          placeholder="Answer Choice 2"
+          className="border"
+        />
+        <input
+          type="text"
+          value={answerThree}
+          onChange={(e) => setAnswerThree(e.target.value)}
+          placeholder="Answer Choice 3"
+          className="border"
+        />
+        <input
+          type="text"
+          value={answerFour}
+          onChange={(e) => setAnswerFour(e.target.value)}
+          placeholder="Answer Choice 4"
+          className="border"
         />
 
         <input
@@ -76,11 +109,25 @@ const Questions = () => {
           value={correctAnswer}
           onChange={(e) => setCorrectAnswer(e.target.value)}
           className="border"
+          placeholder="Correct Answer"
         />
 
-        <button type="submit"
-          onClick={() => { mutate({ question, answer: correctAnswer, learningTargetId: learningTarget }) }}
-        >Create Question</button>
+        <button
+          type="submit"
+          onClick={() => {
+            mutate({
+              question,
+              answer: correctAnswer,
+              learningTargetId: learningTarget,
+              answerOne,
+              answerTwo,
+              answerThree,
+              answerFour,
+            });
+          }}
+        >
+          Create Question
+        </button>
       </form>
     </>
   );

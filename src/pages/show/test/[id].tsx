@@ -1,44 +1,63 @@
 import { useRouter } from "next/router";
+import { ChangeEvent, useState } from "react";
 import { api } from "~/utils/api";
 
 const Tests = () => {
   const router = useRouter();
   const testId = router.query.id as string;
 
-  const test = api.sectionTest.getTestbyId.useQuery({ testId });
+  const [selectedAnswers, setSelectedAnswers] = useState([]);
+
+  const [value, setValue] = useState('female');
+
+  // const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+  //   setSelectedAnswers((prevSelectedAnswers) => {
+  //     const updatedAnswers = [...prevSelectedAnswers];
+  //     updatedAnswers[questionNumber] = answerIndex;
+  //     return updatedAnswers;
+  //   });
+  // };
+
+  const questionNumber = 1;
+
+  const test = api.sectionTest.getTestbyId.useQuery(
+    { testId },
+    { enabled: !!testId }
+  );
+  const questions = test.data?.test.learningTargets;
 
   return (
     <div>
       <h1>Tests</h1>
 
-      {/* {console.log(test.data)} */}
-
-      {/* {test.data?.learningTargets.map((learningTarget) => (
-        <div key={learningTarget.id}>
-          <h2>{learningTarget.name}</h2>
-          <ul>
-            {learningTarget?.questions.map((question) => (
-              <li key={question.id}>
-                <h3>{question.question}</h3>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))} */}
-
-      {test.data?.test.learningTargets.map((learningTarget) => (
-        <div key={learningTarget.id}>
-          <h3>{learningTarget.name}</h3>
-          <ul>
+      <form action="">
+        {questions?.map((learningTarget) => (
+          <div key={learningTarget.id}>
+            <h3>{learningTarget.name}</h3>
             {learningTarget.questions?.map((question) => (
-              <li key={question.id}>
+              <div key={question.id}>
                 <h4>{question.question}</h4>
-                <h1>{question.answer}</h1>
-              </li>
+                {question.answerChoices.map((choice) => (
+                  <div key={choice.id}>
+                    <label>
+                      <input
+                        type="radio"
+                        name={`question_${questionNumber}`}
+                        value={choice.id}
+                        checked={selectedAnswers[question.id] === choice.id}
+                        // onChange={() =>
+                          // handleAnswerSelect(questionNumber, choice.id)
+                        // }
+                      />
+                      {choice.answer}
+                    </label>
+                  </div>
+                ))}
+              </div>
             ))}
-          </ul>
-        </div>
-      ))}
+          </div>
+        ))}
+      </form>
     </div>
   );
 };
