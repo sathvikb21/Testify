@@ -1,5 +1,12 @@
 import { createTRPCRouter } from "~/server/api/trpc";
-import { exampleRouter } from "~/server/api/routers/example";
+import { coursesRouter } from "~/server/api/routers/courses";
+import { usersRouter } from "~/server/api/routers/users";
+import { learningTargetRouter } from "~/server/api/routers/learningtarget";
+import { sectionRouter } from "~/server/api/routers/sections";
+import { questionRouter } from "~/server/api/routers/question";
+import { testsRouter } from "~/server/api/routers/test";
+import { sectionTest } from "~/server/api/routers/sessiontest";
+import { resultRouter } from "~/server/api/routers/testresult";
 
 /**
  * This is the primary router for your server.
@@ -7,7 +14,14 @@ import { exampleRouter } from "~/server/api/routers/example";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  example: exampleRouter,
+  user: usersRouter,
+  courses: coursesRouter,
+  learningTarget: learningTargetRouter,
+  section: sectionRouter,
+  question: questionRouter,
+  test: testsRouter,
+  sectionTest: sectionTest,
+  testResults: resultRouter,
 });
 
 // export type definition of API
