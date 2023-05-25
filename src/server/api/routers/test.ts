@@ -76,9 +76,51 @@ export const testsRouter = createTRPCRouter({
               questions: true,
             },
           },
+          quesions: true,
         },
       });
 
       return test;
     }),
+
+  submitTest: protectedProcedure
+    .input(
+      z.object({
+        testId: z.string(),
+        answers: z.array(
+          z.object({
+            questionId: z.string(),
+            answer: z.string(),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const test = await ctx.prisma.test.findUnique({
+        where: { id: input.testId },
+        include: {
+          quesions: true,
+        },
+      });
+
+      
+    }),
+  
+  getNumberOfQuestions: publicProcedure
+    .input(
+      z.object({
+        testId: z.string(),
+      })
+  )
+    .query(async ({ ctx, input }) => {
+      const test = await ctx.prisma.test.findUnique({
+        where: { id: input.testId },
+        include: {
+          quesions: true,
+        },
+      });
+
+      return test?.quesions.length;
+    }
+  ),
 });

@@ -60,13 +60,10 @@ export const sectionTest = createTRPCRouter({
         include: {
           test: {
             include: {
-              learningTargets: {
+              learningTargets: true,
+              quesions: {
                 include: {
-                  questions: {
-                    include: {
-                      answerChoices: true,
-                    },
-                  },
+                  answerChoices: true,
                 },
               },
             },

@@ -1,62 +1,103 @@
 import { useRouter } from "next/router";
-import { ChangeEvent, useState } from "react";
+import { type ChangeEvent, useState } from "react";
 import { api } from "~/utils/api";
 
 const Tests = () => {
   const router = useRouter();
   const testId = router.query.id as string;
 
-  const [selectedAnswers, setSelectedAnswers] = useState([]);
-
-  const [value, setValue] = useState('female');
-
-  // const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-  //   setSelectedAnswers((prevSelectedAnswers) => {
-  //     const updatedAnswers = [...prevSelectedAnswers];
-  //     updatedAnswers[questionNumber] = answerIndex;
-  //     return updatedAnswers;
-  //   });
-  // };
-
-  const questionNumber = 1;
-
   const test = api.sectionTest.getTestbyId.useQuery(
     { testId },
     { enabled: !!testId }
   );
-  const questions = test.data?.test.learningTargets;
+
+  const numberOfQuestions = api.test.getNumberOfQuestions.useQuery(
+    { testId },
+    { enabled: !!testId }
+  ).data;
+
+  const questions = test.data?.test.quesions;
+
+  const [answeredQuestions, setAnsweredQuestions] = useState<
+    {
+      qNum: number;
+      answer: string;
+    }[]
+  >([]);
+
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+
+  const handleAnswerSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const answer = event.target.value;
+    setAnsweredQuestions((prevAnsweredQuestions) => {
+      const updatedAnsweredQuestions = [...prevAnsweredQuestions];
+      updatedAnsweredQuestions[currentQuestion] = {
+        qNum: currentQuestion,
+        answer: answer,
+      };
+      return updatedAnsweredQuestions;
+    });
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestion === numberOfQuestions) {
+      console.log("done");
+      return currentQuestion - 1;
+    }
+    setCurrentQuestion((prevCurrentQuestion) => prevCurrentQuestion + 1);
+  };
 
   return (
     <div>
       <h1>Tests</h1>
 
       <form action="">
-        {questions?.map((learningTarget) => (
-          <div key={learningTarget.id}>
-            <h3>{learningTarget.name}</h3>
-            {learningTarget.questions?.map((question) => (
+        {questions?.map((question, index) => (
+          <>
+            {index === currentQuestion && (
               <div key={question.id}>
-                <h4>{question.question}</h4>
-                {question.answerChoices.map((choice) => (
-                  <div key={choice.id}>
-                    <label>
-                      <input
-                        type="radio"
-                        name={`question_${questionNumber}`}
-                        value={choice.id}
-                        checked={selectedAnswers[question.id] === choice.id}
-                        // onChange={() =>
-                          // handleAnswerSelect(questionNumber, choice.id)
-                        // }
-                      />
-                      {choice.answer}
-                    </label>
-                  </div>
+                <h1>
+                  {currentQuestion + 1}. {question.question}
+                </h1>
+                {question.answerChoices.map((answer) => (
+                  <label htmlFor="" key={answer.id} className="ml-3">
+                    <input
+                      type="radio"
+                      value={answer.answer}
+                      checked={
+                        answeredQuestions[currentQuestion]?.answer ===
+                        answer.answer
+                      }
+                      onChange={handleAnswerSelect}
+                    />
+                    {answer.answer}
+                  </label>
                 ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         ))}
+
+        {currentQuestion === numberOfQuestions ? (
+          <button
+            onClick={() => {
+              nextQuestion();
+            }}
+          >
+            Next
+          </button>
+        ) : (
+          <>
+            {numberOfQuestions}
+            <a
+              onClick={() => {
+                nextQuestion();
+              }}
+            >
+              Next
+            </a>
+          </>
+        )}
       </form>
     </div>
   );
